@@ -1,0 +1,79 @@
+import { COLORS } from "@/constant/colors";
+import { useUser } from "@clerk/clerk-expo";
+import { Ionicons } from "@expo/vector-icons";
+import { Redirect, Tabs } from "expo-router";
+
+export default function Layout() {
+
+  const {isSignedIn} = useUser()
+
+  if(!isSignedIn) return <Redirect href={"/(auth)/sign-in"}/>
+
+  return (
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: COLORS.activeTabColor,
+        tabBarInactiveTintColor: COLORS.primary,
+        tabBarShowLabel: true,
+        animation: "shift",
+          tabBarStyle: {
+            height: 60,
+          },
+          tabBarLabelStyle: {
+            fontSize: 12,
+              marginTop: 2
+          }
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: "Home",
+          tabBarIcon: ({focused, color, size}) =>(
+            <Ionicons 
+              name={focused ? "home" : "home-outline"} 
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="add"
+        options={{
+            tabBarLabel: () => null,
+          tabBarIcon: ({focused, color, size}) =>(
+            <Ionicons 
+              name={focused ? "add-circle" : "add-circle"}
+              size={size * 2.4}
+              color={color}
+              style={{
+                  marginTop: 16,
+                  width: 56,
+                  height: 56,
+              }}
+            />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="history"
+        options={{
+          title: "History",
+          tabBarIcon: ({focused, color, size}) =>(
+            <Ionicons 
+              name={focused ? "time" : "time-outline"} 
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
+    </Tabs>
+
+  )
+}
+

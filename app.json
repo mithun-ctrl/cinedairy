@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "cinedairy",
+    "name": "Cinedairy",
     "slug": "cinedairy",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,10 +16,10 @@
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.itsmithun.cinedairy"
     },
     "web": {
       "output": "static",
@@ -38,11 +38,19 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "5d12df62-248c-4638-996b-a2e816864b85"
+      }
+    },
+    "owner": "itsmithun"
   }
 }

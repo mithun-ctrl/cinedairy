@@ -10,8 +10,10 @@
   },
   "include": [
     "**/*.ts",
+    "**/*.js",
     "**/*.tsx",
+    "**/*.jsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ]
+, "components/SafeScreen.jsx", "components/ScreenLoader.jsx", "components/HistoryNotFound.jsx", "components/NoMovieFound.jsx", "components/SignOutButton.jsx", "app/_layout.jsx", "hooks/useMovie.js"]
 }
