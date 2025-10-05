@@ -2,6 +2,7 @@ import { COLORS } from "@/constant/colors";
 import { useUser } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import { Redirect, Tabs } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 
 export default function Layout() {
 
@@ -10,14 +11,18 @@ export default function Layout() {
   if(!isSignedIn) return <Redirect href={"/(auth)/sign-in"}/>
 
   return (
+      <>
+          <StatusBar style="dark" backgroundColor="transparent" translucent />
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: COLORS.activeTabColor,
-        tabBarInactiveTintColor: COLORS.primary,
+        tabBarActiveTintColor: COLORS.primary,
+        tabBarInactiveTintColor: COLORS.textMuted,
         tabBarShowLabel: true,
         animation: "shift",
           tabBarStyle: {
+            backgroundColor: COLORS.highlight,
+            borderTopColor: COLORS.borderMuted,
             height: 60,
           },
           tabBarLabelStyle: {
@@ -73,7 +78,7 @@ export default function Layout() {
         }}
       />
     </Tabs>
-
+      </>
   )
 }
 

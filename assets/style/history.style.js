@@ -1,5 +1,5 @@
-import {COLORS} from "@/constant/colors";
-import {StyleSheet} from "react-native";
+import { COLORS } from "@/constant/colors";
+import { StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -10,28 +10,28 @@ export const styles = StyleSheet.create({
     },
     header: {
         padding: 16,
-        backgroundColor: 'white',
+        backgroundColor: COLORS.background,
         marginBottom: 10,
     },
     headerTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
+        fontSize: 20,
+        fontWeight: '600',
         color: COLORS.primary,
     },
     headerSubtitle: {
         fontSize: 14,
-        color: COLORS.secondary,
+        color: COLORS.textMuted,
         marginTop: 4,
     },
     movieCard: {
         flexDirection: 'row',
-        backgroundColor: COLORS.background,
+        backgroundColor: COLORS.highlight,
         padding: 12,
         marginHorizontal: 16,
         borderRadius: 8,
-        shadowColor: COLORS.backgroundShadowColor,
+        shadowColor: COLORS.text,
         shadowOffset: { width: 1, height: 1 },
-        shadowOpacity: 0.8,
+        shadowOpacity: 1,
         shadowRadius: 2,
         elevation: 2,
     },
@@ -53,18 +53,18 @@ export const styles = StyleSheet.create({
     },
     theatreInfo: {
         fontSize: 13,
-        color: COLORS.secondary,
+        color: COLORS.textMuted,
         marginBottom: 4,
     },
     ticketCost: {
         fontSize: 14,
         fontWeight: '500',
-        color: COLORS.secondary,
+        color: COLORS.textMuted,
         marginBottom: 2,
     },
     watchDate: {
         fontSize: 12,
-        color: COLORS.secondary,
+        color: COLORS.textMuted,
     },
     actionButtons: {
         justifyContent: 'center',
@@ -74,7 +74,7 @@ export const styles = StyleSheet.create({
     actionButton: {
         padding: 8,
         borderRadius: 20,
-        backgroundColor: COLORS.lightBackground,
+        backgroundColor: COLORS.backgroundDark,
     },
     separator: {
         height: 10,
@@ -94,20 +94,20 @@ export const styles = StyleSheet.create({
     },
     modalTitle: {
         fontSize: 20,
-        fontWeight: 'bold',
+        fontWeight: '700',
         marginBottom: 20,
         textAlign: 'center',
-        color: COLORS.primary,
+        color: COLORS.textMuted,
     },
     inputLabel: {
         fontSize: 14,
-        color: COLORS.secondary,
+        color: COLORS.textMuted,
         marginBottom: 5,
         marginTop: 10,
     },
     input: {
         borderWidth: 1,
-        borderColor: COLORS.inputBorderColor,
+        borderColor: COLORS.borderMuted,
         borderRadius: 8,
         padding: 10,
         fontSize: 14,
@@ -115,10 +115,10 @@ export const styles = StyleSheet.create({
     },
     pickerContainer: {
         borderWidth: 1,
-        borderColor: COLORS.inputBorderColor,
+        borderColor: COLORS.borderMuted,
         borderRadius: 8,
         fontSize: 14,
-        color: COLORS.primary,
+        color: COLORS.textMuted,
     },
     picker: {
         color: COLORS.primary,
@@ -132,7 +132,7 @@ export const styles = StyleSheet.create({
         flex: 1,
         padding: 10,
         borderWidth: 1,
-        borderColor: COLORS.inputBorderColor,
+        borderColor: COLORS.borderMuted,
         borderRadius: 8,
         alignItems: 'center',
     },
@@ -159,17 +159,17 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
     },
     cancelButton: {
-        backgroundColor: COLORS.lightBackground
+        backgroundColor: COLORS.backgroundDark
     },
     cancelButtonText: {
-        color: COLORS.primary,
+        color: COLORS.textMuted,
         fontWeight: '600',
     },
     updateButton: {
         backgroundColor: COLORS.primary,
     },
     updateButtonText: {
-        color: COLORS.buttonText,
+        color: COLORS.backgroundDark,
         fontWeight: '600',
     },
     historyNotFoundContainer: {
@@ -179,12 +179,12 @@ export const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     historyNotFoundLogo: {
-        color: COLORS.secondary,
+        color: COLORS.primary,
     },
     historyNotFoundText: {
         fontSize: 14,
         fontWeight: '700',
-        color: COLORS.primary,
+        color: COLORS.textMuted,
         opacity: 0.7
     },
 });

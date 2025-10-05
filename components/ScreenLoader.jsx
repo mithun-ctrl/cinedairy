@@ -6,8 +6,9 @@ import { ActivityIndicator, View } from 'react-native';
 
 const ScreenLoader = () => {
   return (
-    <View style={styles.container}>
-      <ActivityIndicator size="small" color={COLORS.primary} />
+    <View 
+      style={styles.container}>
+      <ActivityIndicator size="large" color={COLORS.primary} />
     </View>
   );
 };

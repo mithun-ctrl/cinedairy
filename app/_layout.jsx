@@ -9,7 +9,6 @@ const clerKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 WebBrowser.maybeCompleteAuthSession();
 
 export default function RootLayout() {
-    console.log("key: ", clerKey);
   return (
       <ClerkProvider publishableKey={clerKey} tokenCache={tokenCache}>
           <SafeScreen>

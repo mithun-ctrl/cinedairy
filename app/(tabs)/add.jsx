@@ -122,8 +122,8 @@ const AddMovie = ({ navigation, route }) => {
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
-            >
-                <Text style={styles.title}>Add New Movie</Text>
+            >   
+               <Text style={styles.title}>Add New Movie</Text>
 
                 <View style={styles.inputGroup}>
                     <Text style={styles.label}>Name *</Text>
@@ -132,7 +132,7 @@ const AddMovie = ({ navigation, route }) => {
                         value={title}
                         onChangeText={setTitle}
                         placeholder="Enter movie name"
-                        placeholderTextColor={COLORS.inputPlaceholderColor}
+                        placeholderTextColor={COLORS.textMuted}
                     />
                 </View>
 
@@ -144,7 +144,7 @@ const AddMovie = ({ navigation, route }) => {
                         value={ticketCost}
                         onChangeText={setTicketCost}
                         placeholder="Enter ticket cost"
-                        placeholderTextColor={COLORS.inputPlaceholderColor}
+                        placeholderTextColor={COLORS.textMuted}
                         keyboardType="decimal-pad"
                     />
                 </View>
@@ -157,7 +157,7 @@ const AddMovie = ({ navigation, route }) => {
                         value={theatreName}
                         onChangeText={setTheatreName}
                         placeholder="Enter theatre name"
-                        placeholderTextColor={COLORS.inputPlaceholderColor}
+                        placeholderTextColor={COLORS.textMuted}
                     />
                 </View>
 

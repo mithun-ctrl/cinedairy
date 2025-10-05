@@ -119,7 +119,7 @@ const History = () => {
                 </Text>
 
                 <Text style={styles.theatreInfo}>
-                    {item.theatre_name} | {item.theatre_format || 'Standard'}
+                    {item.theatre_name} | {item.theatre_format || 'Standard'} | {item.movie_format}
                 </Text>
 
                 <Text style={styles.ticketCost}>
@@ -136,14 +136,14 @@ const History = () => {
                     style={styles.actionButton}
                     onPress={() => handleUpdatePress(item)}
                 >
-                    <Ionicons name="pencil" size={20} color={COLORS.primary} />
+                    <Ionicons name="pencil" size={20} color={COLORS.info} />
                 </TouchableOpacity>
 
                 <TouchableOpacity
                     style={styles.actionButton}
                     onPress={() => handleDelete(item.id, item.title)}
                 >
-                    <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+                    <Ionicons name="trash-outline" size={20} color={COLORS.danger} />
                 </TouchableOpacity>
             </View>
         </View>

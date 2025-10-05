@@ -7,7 +7,7 @@ export const SignOutButton = () => {
   const { signOut } = useClerk()
 
   const handleSignOut = async () => {
-    Alert.alert("SignOut", "Are you sure want to sign out", [
+    Alert.alert("Logout", "Are you sure want to logout", [
       {text: "Cancel", style: "cancel"},
       {text: "Logout", style: "destructive", onPress: signOut}
     ]);
@@ -16,21 +16,21 @@ export const SignOutButton = () => {
   return (
     <TouchableOpacity onPress={handleSignOut}
       style={{
-        backgroundColor: COLORS.background,
+        backgroundColor: COLORS.highlight,
         padding: 10,
         borderRadius: 50,
         opacity: 1,
-        shadowColor: COLORS.activeTabColor,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.5,
-        shadowRadius: 4,
-        elevation: 3,
+        shadowColor: COLORS.text,
+        shadowOffset: { width: 2, height: 2 },
+        shadowOpacity: 1,
+        shadowRadius: 2,
+        elevation: 2,
       }}
     >
       <Ionicons 
         name='log-out-outline' 
         size={24}
-        color={COLORS.activeTabColor}
+        color={COLORS.primary}
       />
     </TouchableOpacity>
   )

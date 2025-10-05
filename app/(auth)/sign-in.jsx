@@ -7,24 +7,21 @@ import React, { useEffect, useState } from 'react';
 import { Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 
-
 export const useWarmUpBrowser = () => {
   useEffect(() => {
-    
-    if(Platform.OS !== 'android') return
+
+    if (Platform.OS !== 'android') return
     void WebBrowser.warmUpAsync()
-    return () =>{
+    return () => {
       void WebBrowser.coolDownAsync()
     }
-    
+
   }, [])
 };
 
 WebBrowser.maybeCompleteAuthSession();
 
-
 export default function Page() {
-
   useWarmUpBrowser();
 
   const { signIn, setActive, isLoaded } = useSignIn()
@@ -56,19 +53,19 @@ export default function Page() {
       }
     } catch (err) {
       console.error(JSON.stringify(err, null, 2))
-      if(err.errors?.[0]?.code === "form_conditional_param_missing"){
+      if (err.errors?.[0]?.code === "form_conditional_param_missing") {
         setError("All field are required");
       }
-      else if(err.errors?.[0]?.code === "form_password_incorrect"){
+      else if (err.errors?.[0]?.code === "form_password_incorrect") {
         setError("Invalid credentials");
       }
-      else if(err.errors?.[0]?.code==="form_identifier_not_found"){
+      else if (err.errors?.[0]?.code === "form_identifier_not_found") {
         setError("Account not found");
       }
-      else if(err.errors?.[0]?.code === "form_param_nil"){
+      else if (err.errors?.[0]?.code === "form_param_nil") {
         setError("All field are required");
       }
-      else{
+      else {
         setError("An error occurred. Please try again.");
       }
     }
@@ -90,7 +87,7 @@ export default function Page() {
           keyboardType="email-address"
           value={emailAddress}
           placeholder="Email"
-          placeholderTextColor={COLORS.secondary}
+          placeholderTextColor={COLORS.textMuted}
           onChangeText={(text) => setEmailAddress(text)}
           style={styles.input}
         />
@@ -100,27 +97,29 @@ export default function Page() {
         <TextInput
           value={password}
           placeholder="Password"
-          placeholderTextColor={COLORS.secondary}
+          placeholderTextColor={COLORS.textMuted}
           secureTextEntry={true}
           onChangeText={(text) => setPassword(text)}
           style={styles.input}
         />
       </View>
-
+      <Link href="/reset-password">
+        <Text style={{ color: COLORS.textMuted }}>Forgot Password?</Text>
+      </Link>
       <TouchableOpacity
         onPress={onSignInPress}
         disabled={loading}
         style={[styles.primaryBtn, loading && { opacity: 0.7 }]}
       >
-        <Text style={styles.primaryBtnText}>{loading ? 'Signing……' : 'Sign In'}</Text>
+        <Text style={styles.primaryBtnText}>{loading ? 'Please Wait....' : 'Sign In'}</Text>
       </TouchableOpacity>
 
-      
+
 
       <View style={styles.footerRow}>
-        <Text style={styles.footerText}>Don't have an account?</Text>
+        <Text style={styles.footerText}>Not register yet ?</Text>
         <Link href="/sign-up">
-          <Text style={styles.linkText}>Sign up</Text>
+          <Text style={styles.linkText}>Create Account</Text>
         </Link>
       </View>
     </View>

@@ -1,5 +1,5 @@
-import {StyleSheet} from "react-native";
-import {COLORS} from "../../constant/colors";
+import { StyleSheet } from "react-native";
+import { COLORS } from "../../constant/colors";
 
 export const styles = StyleSheet.create({
     container: {
@@ -11,28 +11,28 @@ export const styles = StyleSheet.create({
         paddingBottom: 40,
     },
     title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: COLORS.secondary,
-        marginBottom: 25,
+        fontSize: 20,
+        fontWeight: '900',
+        color: COLORS.textMuted,
+        marginBottom: 20,
         textAlign: 'center',
     },
     inputGroup: {
         marginBottom: 20,
     },
     label: {
-        fontSize: 14,
-        fontWeight: '700',
-        color: COLORS.primary,
+        fontSize: 13,
+        fontWeight: '400',
+        color: COLORS.textMuted,
         marginBottom: 8,
     },
     input: {
         backgroundColor: COLORS.background,
         borderRadius: 10,
         padding: 12,
-        fontSize: 16,
+        fontSize: 14,
         borderWidth: 1,
-        borderColor: COLORS.inputBorderColor,
+        borderColor: COLORS.borderMuted,
         color: COLORS.primary,
     },
     dateButton: {
@@ -40,11 +40,11 @@ export const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 12,
         borderWidth: 1,
-        borderColor: COLORS.inputBorderColor,
+        borderColor: COLORS.borderMuted,
     },
     dateText: {
         fontSize: 16,
-        color: COLORS.inputPlaceholderColor,
+        color: COLORS.textMuted,
     },
     radioGroup: {
         flexDirection: 'row',
@@ -57,19 +57,19 @@ export const styles = StyleSheet.create({
         padding: 15,
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: COLORS.inputBorderColor,
+        borderColor: COLORS.textMuted,
     },
     radioButtonSelected: {
-        backgroundColor: COLORS.primary,
-        borderColor: COLORS.primary,
+        backgroundColor: COLORS.secondary,
+        borderColor: COLORS.secondary,
     },
     radioText: {
-        fontSize: 16,
+        fontSize: 14,
         color: COLORS.primary,
-        fontWeight: '600',
+        fontWeight: '500',
     },
     radioTextSelected: {
-        color: COLORS.buttonText,
+        color: COLORS.backgroundLight,
     },
     formatScroll: {
         maxHeight: 60,
@@ -81,7 +81,7 @@ export const styles = StyleSheet.create({
         paddingVertical: 12,
         marginRight: 8,
         borderWidth: 1,
-        borderColor: COLORS.inputBorderColor,
+        borderColor: COLORS.borderMuted,
     },
     formatButtonSelected: {
         backgroundColor: COLORS.secondary,
@@ -90,15 +90,15 @@ export const styles = StyleSheet.create({
     formatText: {
         fontSize: 14,
         color: COLORS.primary,
-        fontWeight: '600',
+        fontWeight: '500',
     },
     formatTextSelected: {
-        color: COLORS.buttonText,
+        color: COLORS.backgroundLight,
     },
     submitButton: {
         backgroundColor: COLORS.primary,
         borderRadius: 100,
-        padding: 16,
+        padding: 14,
         alignItems: 'center',
         marginTop: 20,
         shadowColor: COLORS.secondary,
@@ -114,8 +114,8 @@ export const styles = StyleSheet.create({
         opacity: 0.6,
     },
     submitButtonText: {
-        color: COLORS.buttonText,
+        color: COLORS.backgroundLight,
         fontSize: 18,
-        fontWeight: '800',
+        fontWeight: '600',
     },
 });

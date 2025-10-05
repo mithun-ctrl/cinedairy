@@ -117,7 +117,7 @@ export default function SignUpScreen() {
           autoCapitalize="none"
           value={username}
           placeholder="Username"
-          placeholderTextColor={COLORS.secondary}
+          placeholderTextColor={COLORS.textMuted}
           onChangeText={setUsername}
           style={styles.input}
         />
@@ -129,7 +129,7 @@ export default function SignUpScreen() {
           keyboardType="email-address"
           value={emailAddress}
           placeholder="Email"
-          placeholderTextColor={COLORS.secondary}
+          placeholderTextColor={COLORS.textMuted}
           onChangeText={setEmailAddress}
           style={styles.input}
         />
@@ -139,7 +139,7 @@ export default function SignUpScreen() {
         <TextInput
           value={password}
           placeholder="Password"
-          placeholderTextColor={COLORS.secondary}
+          placeholderTextColor={COLORS.textMuted}
           secureTextEntry
           onChangeText={setPassword}
           style={styles.input}
@@ -147,7 +147,7 @@ export default function SignUpScreen() {
       </View>
 
       <TouchableOpacity onPress={onSignUpPress} disabled={loading} style={[styles.primaryBtn, loading && { opacity: 0.7 }]}>
-        <Text style={styles.primaryBtnText}>{loading ? 'Signping……' : 'Sign Up'}</Text>
+        <Text style={styles.primaryBtnText}>{loading ? 'Please Wait....' : 'Sign Up'}</Text>
       </TouchableOpacity>
 
       
@@ -155,7 +155,7 @@ export default function SignUpScreen() {
       <View style={styles.footerRow}>
         <Text style={styles.footerText}>Already have an account?</Text>
         <Link href="/sign-in">
-          <Text style={styles.linkText}>Sign in</Text>
+          <Text style={styles.linkText}>Sign In</Text>
         </Link>
       </View>
     </View>

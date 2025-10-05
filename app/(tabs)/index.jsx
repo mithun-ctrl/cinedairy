@@ -2,6 +2,7 @@ import { styles } from "@/assets/style/home.style";
 import NoMovieFound from "@/components/NoMovieFound";
 import ScreenLoader from '@/components/ScreenLoader';
 import { SignOutButton } from '@/components/SignOutButton';
+import { COLORS } from "@/constant/colors";
 import { useMovies } from "@/hooks/useMovie";
 import { useUser } from '@clerk/clerk-expo';
 import { Ionicons } from "@expo/vector-icons";
@@ -77,7 +78,7 @@ export default function Page() {
                 ticket && (
                     <View style={styles.card}>
                         <Text style={styles.cardTitle}>
-                        <Ionicons name="trophy" size={20}/> Premium Experience
+                        <Ionicons style={{color: COLORS.textMuted}} name="trophy" size={20}/> Premium Experience
                         </Text>
                         <View style={styles.ticketContent}>
                             <Image

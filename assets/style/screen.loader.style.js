@@ -6,11 +6,6 @@ export const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'transparent',
-    },
-    message: {
-        marginTop: 12,
-        color: COLORS.primary,
-        fontSize: 14,
+        backgroundColor: COLORS.background,
     },
 })
