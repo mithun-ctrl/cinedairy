@@ -1,12 +1,14 @@
 import { styles } from "@/assets/style/add.style";
 import { COLORS } from "@/constant/colors";
+import { TMDB_API_KEY } from "@/hooks/key";
 import { useUser } from "@clerk/clerk-expo";
+import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from '@react-native-community/datetimepicker';
-import React, { useState } from 'react';
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
     Alert,
-    KeyboardAvoidingView,
+    Image,
     Platform,
     ScrollView,
     Text,
@@ -14,10 +16,13 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
-const AddMovie = ({ navigation, route }) => {
-    const {user} = useUser();
+
+const AddMovie = ({ navigation }) => {
+    const { user } = useUser();
     const userId = user?.id;
+    const router = useRouter();
 
     const [title, setTitle] = useState('');
     const [ticketCost, setTicketCost] = useState('');
@@ -26,10 +31,45 @@ const AddMovie = ({ navigation, route }) => {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [movieFormat, setMovieFormat] = useState('2D');
     const [theatreFormat, setTheatreFormat] = useState('PVR');
+    const [posterUrl, setPosterUrl] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+
+    const [results, setResults] = useState([]);
+    const [isMovieSelected, setIsMovieSelected] = useState(false);
+    const [focusedInput, setFocusedInput] = useState(null);
 
     const theatreFormats = ['PVR', '4DX', 'EPIQ', 'IMAX', 'DOLBY', 'SINGLE SCREEN', 'OTHER'];
     const movieFormats = ['2D', '3D'];
+
+    const posterBaseUrl = "https://image.tmdb.org/t/p/original";
+
+    useEffect(() => {
+        if (title.length < 2 || isMovieSelected) {
+            setResults([]);
+            if (isMovieSelected) {
+                setIsMovieSelected(false);
+            }
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            fetchMovies(title);
+        }, 400);
+
+        return () => clearTimeout(timer);
+    }, [title]);
+
+    const fetchMovies = async (searchTerm) => {
+        try {
+            const res = await fetch(
+                `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(searchTerm)}`
+            );
+            const data = await res.json();
+            setResults(data.results || []);
+        } catch (err) {
+            console.error("Error fetching TMDB:", err);
+        }
+    };
 
     const handleDateChange = (event, selectedDate) => {
         setShowDatePicker(Platform.OS === 'ios');
@@ -70,7 +110,8 @@ const AddMovie = ({ navigation, route }) => {
             theatre_name: theatreName.trim(),
             watched_date: formatDate(watchedDate),
             movie_format: movieFormat,
-            theatre_format: theatreFormat
+            theatre_format: theatreFormat,
+            poster_url: posterUrl
         };
 
         try {
@@ -115,141 +156,227 @@ const AddMovie = ({ navigation, route }) => {
     };
 
     return (
-        <KeyboardAvoidingView
+        <KeyboardAwareScrollView
             style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-            <ScrollView
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.scrollContent}
-            >   
-               <Text style={styles.title}>Add New Movie</Text>
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}>
 
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Name *</Text>
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => router.back()}>
+                    <Ionicons name='arrow-back' size={24} color={COLORS.text} />
+                </TouchableOpacity>
+                <Text style={styles.title}>Add New Movie</Text>
+                <TouchableOpacity
+                    style={[styles.addButtonContainer, isLoading && styles.addButtonDisabled]}
+                    onPress={handleSubmit}
+                    disabled={isLoading}>
+                    <Text style={styles.addButton}>{isLoading ? "Adding..." : "Add"}</Text>
+                    {!isLoading && <Ionicons name='checkmark' size={20} color={COLORS.primary} />}
+                </TouchableOpacity>
+            </View>
+
+            {/* Movie Title with Enhanced Suggestions */}
+            <View style={styles.inputGroup}>
+                <Text style={styles.label}>Movie Name *</Text>
+                <View style={[
+                    styles.inputContainer,
+                    focusedInput === 'title' && styles.inputContainerFocused
+                ]}>
+                    <Ionicons 
+                        name="film-outline" 
+                        size={20} 
+                        color={focusedInput === 'title' ? COLORS.primary : COLORS.textMuted} 
+                        style={styles.inputIcon}
+                    />
                     <TextInput
-                        style={styles.input}
+                        style={styles.inputWithIcon}
                         value={title}
-                        onChangeText={setTitle}
-                        placeholder="Enter movie name"
+                        onChangeText={(text) => {
+                            setTitle(text);
+                            setIsMovieSelected(false);
+                        }}
+                        onFocus={() => setFocusedInput('title')}
+                        onBlur={() => setFocusedInput(null)}
+                        placeholder="Search for a movie..."
                         placeholderTextColor={COLORS.textMuted}
                     />
+                    {title.length > 0 && (
+                        <TouchableOpacity onPress={() => {
+                            setTitle('');
+                            setIsMovieSelected(false);
+                            setResults([]);
+                        }}>
+                            <Ionicons name="close-circle" size={20} color={COLORS.textMuted} />
+                        </TouchableOpacity>
+                    )}
                 </View>
+                
+                {results.length > 0 && (
+                    <View style={styles.suggestionsContainer}>
+                        <ScrollView
+                            style={styles.suggestions}
+                            nestedScrollEnabled={true}
+                            keyboardShouldPersistTaps="handled"
+                        >
+                            {results.map((item) => (
+                                <TouchableOpacity
+                                    key={item.id.toString()}
+                                    style={styles.suggestionItem}
+                                    onPress={() => {
+                                        setTitle(item.title);
+                                        setPosterUrl(`${posterBaseUrl}${item.poster_path}`);
+                                        setIsMovieSelected(true);
+                                        setResults([]);
+                                    }}
+                                >
+                                    <View style={styles.posterContainer}>
+                                        {item.poster_path ? (
+                                            <Image
+                                                source={{ uri: `https://image.tmdb.org/t/p/w92${item.poster_path}` }}
+                                                style={styles.poster}
+                                            />
+                                        ) : (
+                                            <View style={styles.posterPlaceholder}>
+                                                <Ionicons name="image-outline" size={20} color={COLORS.textMuted} />
+                                            </View>
+                                        )}
+                                    </View>
+                                    <View style={styles.suggestionTextContainer}>
+                                        <Text style={styles.suggestionTitle} numberOfLines={1}>
+                                            {item.title}<Text style={styles.suggestionYear}> ({item.release_date?.split("-")[0] || "N/A"})</Text>                                            
+                                        </Text>
+                                    </View>
+                                    <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                    </View>
+                )}
+            </View>
 
-                {/* Ticket Cost */}
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Ticket Cost (₹) *</Text>
+            {/* Ticket Cost */}
+            <View style={styles.inputGroup}>
+                <Text style={styles.label}>Ticket Cost *</Text>
+                <View style={[
+                    styles.inputContainer,
+                    focusedInput === 'cost' && styles.inputContainerFocused
+                ]}>
+                    <Text style={styles.currencySymbol}>₹</Text>
                     <TextInput
-                        style={styles.input}
+                        style={styles.inputWithIcon}
                         value={ticketCost}
                         onChangeText={setTicketCost}
+                        onFocus={() => setFocusedInput('cost')}
+                        onBlur={() => setFocusedInput(null)}
                         placeholder="Enter ticket cost"
                         placeholderTextColor={COLORS.textMuted}
                         keyboardType="decimal-pad"
                     />
                 </View>
+            </View>
 
-                {/* Theatre Name */}
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Theatre Name *</Text>
+            {/* Theatre Name */}
+            <View style={styles.inputGroup}>
+                <Text style={styles.label}>Theatre Name *</Text>
+                <View style={[
+                    styles.inputContainer,
+                    focusedInput === 'theatre' && styles.inputContainerFocused
+                ]}>
+                    <Ionicons 
+                        name="location-outline" 
+                        size={20} 
+                        color={focusedInput === 'theatre' ? COLORS.primary : COLORS.textMuted}
+                        style={styles.inputIcon}
+                    />
                     <TextInput
-                        style={styles.input}
+                        style={styles.inputWithIcon}
                         value={theatreName}
                         onChangeText={setTheatreName}
+                        onFocus={() => setFocusedInput('theatre')}
+                        onBlur={() => setFocusedInput(null)}
                         placeholder="Enter theatre name"
                         placeholderTextColor={COLORS.textMuted}
                     />
                 </View>
+            </View>
 
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Watched Date *</Text>
-                    <TouchableOpacity
-                        style={styles.dateButton}
-                        onPress={() => setShowDatePicker(true)}>
-                        <Text style={styles.dateText}>
-                            {watchedDate.toLocaleDateString('en-IN', {
-                                day: '2-digit',
-                                month: 'long',
-                                year: 'numeric',
-                                timeZone: 'Asia/Kolkata',
-                            })}
-                        </Text>
-                    </TouchableOpacity>
-                    {showDatePicker && (
-                        <DateTimePicker
-                            value={watchedDate}
-                            mode="date"
-                            display="default"
-                            onChange={handleDateChange}
-                            maximumDate={new Date()}
-                        />
-                    )}
-                </View>
-
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Watched Format</Text>
-                    <View style={styles.radioGroup}>
-                        {movieFormats.map((format) => (
-                            <TouchableOpacity
-                                key={format}
-                                style={[
-                                    styles.radioButton,
-                                    movieFormat === format && styles.radioButtonSelected
-                                ]}
-                                onPress={() => setMovieFormat(format)}
-                            >
-                                <Text style={[
-                                    styles.radioText,
-                                    movieFormat === format && styles.radioTextSelected
-                                ]}>
-                                    {format}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                </View>
-
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Theatre Format</Text>
-                    <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        style={styles.formatScroll}
-                    >
-                        <View style={styles.radioGroup}>
-                            {theatreFormats.map((format) => (
-                                <TouchableOpacity
-                                    key={format}
-                                    style={[
-                                        styles.formatButton,
-                                        theatreFormat === format && styles.formatButtonSelected
-                                    ]}
-                                    onPress={() => setTheatreFormat(format)}
-                                >
-                                    <Text style={[
-                                        styles.formatText,
-                                        theatreFormat === format && styles.formatTextSelected
-                                    ]}>
-                                        {format}
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-                    </ScrollView>
-                </View>
+            {/* Watched Date */}
+            <View style={styles.inputGroup}>
+                <Text style={styles.label}>Watched Date *</Text>
                 <TouchableOpacity
-                    style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
-                    onPress={handleSubmit}
-                    disabled={isLoading}
-                >
-                    {isLoading ? (
-                        <ActivityIndicator color="#FFF" />
-                    ) : (
-                        <Text style={styles.submitButtonText}>Add</Text>
-                    )}
+                    style={styles.dateButton}
+                    onPress={() => setShowDatePicker(true)}>
+                    <Ionicons name="calendar-outline" size={20} color={COLORS.primary} />
+                    <Text style={styles.dateText}>
+                        {watchedDate.toLocaleDateString('en-IN', {
+                            day: '2-digit',
+                            month: 'long',
+                            year: 'numeric',
+                            timeZone: 'Asia/Kolkata',
+                        })}
+                    </Text>
                 </TouchableOpacity>
-            </ScrollView>
-        </KeyboardAvoidingView>
+                {showDatePicker && (
+                    <DateTimePicker
+                        value={watchedDate}
+                        mode="date"
+                        display="default"
+                        onChange={handleDateChange}
+                        maximumDate={new Date()}
+                    />
+                )}
+            </View>
+
+            {/* Movie Format */}
+            <View style={styles.inputGroup}>
+                <Text style={styles.label}>Watched Format</Text>
+                <View style={styles.radioGroup}>
+                    {movieFormats.map((format) => (
+                        <TouchableOpacity
+                            key={format}
+                            style={[
+                                styles.radioButton,
+                                movieFormat === format && styles.radioButtonSelected
+                            ]}
+                            onPress={() => setMovieFormat(format)}
+                        >
+                            <Text style={[
+                                styles.radioText,
+                                movieFormat === format && styles.radioTextSelected
+                            ]}>
+                                {format}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            </View>
+
+            {/* Theatre Format - Wrapped Grid */}
+            <View style={styles.inputGroup}>
+                <Text style={styles.label}>Theatre Format</Text>
+                <View style={styles.formatGrid}>
+                    {theatreFormats.map((item) => (
+                        <TouchableOpacity
+                            key={item}
+                            style={[
+                                styles.formatChip,
+                                theatreFormat === item && styles.formatChipSelected
+                            ]}
+                            onPress={() => setTheatreFormat(item)}
+                        >
+                            <Text
+                                style={[
+                                    styles.formatChipText,
+                                    theatreFormat === item && styles.formatChipTextSelected
+                                ]}
+                            >
+                                {item}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            </View>
+        </KeyboardAwareScrollView>
     );
 };
 
