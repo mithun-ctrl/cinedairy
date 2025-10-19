@@ -6,7 +6,7 @@ import * as WebBrowser from "expo-web-browser";
 
 const clerKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
-WebBrowser.maybeCompleteAuthSession();
+WebBrowser.maybeCompleteAuthSession()
 
 export default function RootLayout() {
     
