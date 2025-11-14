@@ -1,6 +1,6 @@
 import { styles } from "@/assets/style/add.style";
 import { COLORS } from "@/constant/colors";
-import { TMDB_API_KEY } from "@/hooks/key";
+import { Config } from "@/hooks/key";
 import { useUser } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -62,7 +62,7 @@ const AddMovie = ({ navigation }) => {
     const fetchMovies = async (searchTerm) => {
         try {
             const res = await fetch(
-                `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(searchTerm)}`
+                `https://api.themoviedb.org/3/search/movie?api_key=${Config.TMDB_API_KEY}&query=${encodeURIComponent(searchTerm)}`
             );
             const data = await res.json();
             setResults(data.results || []);
@@ -115,7 +115,7 @@ const AddMovie = ({ navigation }) => {
         };
 
         try {
-            const response = await fetch('https://cinedairy.onrender.com/api/v3/movie', {
+            const response = await fetch(`${Config.API_BASE_URL}/movie`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

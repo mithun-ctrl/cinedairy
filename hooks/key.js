@@ -1,1 +1,6 @@
-export const TMDB_API_KEY = process.env.EXPO_PUBLIC_TMDB_API_KEY
+export const Config = {
+
+    TMDB_API_KEY: process.env.EXPO_PUBLIC_TMDB_API_KEY,
+    API_BASE_URL: process.env.EXPO_PUBLIC_API_BASE_URL,
+    CLERK_PUBLISHABLE_KEY: process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY
+}

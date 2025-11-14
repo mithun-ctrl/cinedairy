@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
 import { Alert } from "react-native";
-
-const API_BASE_URL = "https://cinedairy.onrender.com/api/v3";
+import { Config } from "./key";
 
 
 export const useMovies = (userId) => {
@@ -17,7 +16,7 @@ export const useMovies = (userId) => {
 
   const getMovies = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/movie/${userId}`);
+      const response = await fetch(`${Config.API_BASE_URL}/movie/${userId}`);
       if (!response.ok) throw new Error("Failed to fetch movies");
       const data = await response.json();
       setMovies(data);
@@ -29,7 +28,7 @@ export const useMovies = (userId) => {
 
   const getSummary = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/movie/summary/${userId}`);
+      const response = await fetch(`${Config.API_BASE_URL}/movie/summary/${userId}`);
       if (!response.ok) throw new Error("Failed to fetch summary");
       const data = await response.json();
       setSummary(data);
@@ -54,7 +53,7 @@ export const useMovies = (userId) => {
   const removeMovie = useCallback(
     async (id) => {
       try {
-        const response = await fetch(`${API_BASE_URL}/movie/${id}`, {
+        const response = await fetch(`${Config.API_BASE_URL}/movie/${id}`, {
           method: "DELETE",
         });
         if (!response.ok) throw new Error("Failed to delete movie");
@@ -71,7 +70,7 @@ export const useMovies = (userId) => {
   const updateMovie = useCallback(
     async (id, updatedFields) => {
       try {
-        const response = await fetch(`${API_BASE_URL}/movie/${id}`, {
+        const response = await fetch(`${Config.API_BASE_URL}/movie/${id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(updatedFields),
