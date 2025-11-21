@@ -14,7 +14,7 @@ export default function Layout() {
 
   return (
       <>
-          <StatusBar style="dark" backgroundColor="transparent" translucent />
+          <StatusBar style="dark" backgroundColor={COLORS.background} translucent />
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -25,7 +25,7 @@ export default function Layout() {
           tabBarStyle: {
             backgroundColor: COLORS.highlight,
             borderTopColor: COLORS.borderMuted,
-            height: 54,
+            height: 64,
           },
           tabBarLabelStyle: {
             fontSize: 11,

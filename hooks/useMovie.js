@@ -1,10 +1,12 @@
-import { useCallback, useState } from "react";
+import { db } from "@/hooks/firebase";
+import { onValue, ref } from "firebase/database";
+import { useCallback, useEffect, useState } from "react"; // Added useCallback
 import { Alert } from "react-native";
 import { Config } from "./key";
 
-
 export const useMovies = (userId) => {
   const [movies, setMovies] = useState([]);
+  const [history, setHistory] = useState([]); // This will hold the filtered list
   const [summary, setSummary] = useState({
     totalMovies: 0,
     totalTicketCost: 0,
@@ -12,80 +14,144 @@ export const useMovies = (userId) => {
     movie3DCount: 0,
     mostExpensiveTicket: null,
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const getMovies = useCallback(async () => {
-    try {
-      const response = await fetch(`${Config.API_BASE_URL}/movie/${userId}`);
-      if (!response.ok) throw new Error("Failed to fetch movies");
-      const data = await response.json();
-      setMovies(data);
-    } catch (error) {
-      console.log("Error fetching movies:", error);
-      Alert.alert("Error", "Could not load movies.");
-    }
-  }, [userId]);
-
-  const getSummary = useCallback(async () => {
-    try {
-      const response = await fetch(`${Config.API_BASE_URL}/movie/summary/${userId}`);
-      if (!response.ok) throw new Error("Failed to fetch summary");
-      const data = await response.json();
-      setSummary(data);
-    } catch (error) {
-      console.log("Error fetching summary:", error);
-      Alert.alert("Error", "Could not load summary data.");
-    }
-  }, [userId]);
-
-  const refreshMovies = useCallback(async () => {
-    if (!userId) return;
-    setIsLoading(true);
-    try {
-      await Promise.all([getMovies(), getSummary()]);
-    } catch (error) {
-      console.log("Error refreshing movies:", error);
-    } finally {
+  // 1. Fetch Data
+  useEffect(() => {
+    if (!userId) {
       setIsLoading(false);
+      return;
     }
-  }, [getMovies, getSummary, userId]);
 
-  const removeMovie = useCallback(
-    async (id) => {
-      try {
-        const response = await fetch(`${Config.API_BASE_URL}/movie/${id}`, {
-          method: "DELETE",
-        });
-        if (!response.ok) throw new Error("Failed to delete movie");
-        await refreshMovies();
-        Alert.alert("Success", "Movie deleted successfully!");
-      } catch (error) {
-        console.log("Error deleting movie:", err);
-        Alert.alert("Error", err.message);
+    setIsLoading(true);
+    const moviesRef = ref(db, `users/${userId}/movies`);
+
+    const unsubscribe = onValue(
+      moviesRef,
+      (snapshot) => {
+        const data = snapshot.val() || {};
+        const movieList = Object.entries(data).map(([id, movie]) => ({
+          id,
+          ...movie,
+        }));
+
+        const reversedList = movieList.reverse();
+        setMovies(reversedList);
+        
+        // Initialize history with all movies by default to prevent empty screen
+        setHistory(reversedList); 
+        setIsLoading(false);
+      },
+      (error) => {
+        console.error("Firebase error:", error);
+        setIsLoading(false);
+        Alert.alert("Error", "Failed to load movies");
       }
-    },
-    [refreshMovies]
-  );
+    );
 
-  const updateMovie = useCallback(
-    async (id, updatedFields) => {
-      try {
-        const response = await fetch(`${Config.API_BASE_URL}/movie/${id}`, {
+    return () => unsubscribe();
+  }, [userId]);
+
+  // 2. Calculate Summary
+  useEffect(() => {
+    if (!movies.length) {
+      setSummary({
+        totalMovies: 0,
+        totalTicketCost: 0,
+        movie2DCount: 0,
+        movie3DCount: 0,
+        mostExpensiveTicket: null,
+      });
+      return;
+    }
+
+    const totalMovies = movies.length;
+    const totalTicketCost = Number(
+      movies.reduce((sum, m) => sum + Number(m.ticket_cost || 0), 0).toFixed(2)
+    );
+
+    const movie2DCount = movies.filter((m) => m.movie_format === "2D").length;
+    const movie3DCount = movies.filter((m) => m.movie_format === "3D").length;
+
+    const mostExpensiveTicket = movies.reduce((max, m) => {
+      return Number(m.ticket_cost) > Number(max.ticket_cost) ? m : max;
+    }, movies[0]);
+
+    setSummary({
+      totalMovies,
+      totalTicketCost,
+      movie2DCount,
+      movie3DCount,
+      mostExpensiveTicket,
+    });
+  }, [movies]);
+
+  // 3. Filtering Logic
+  const getHistoryByDuration = useCallback((duration = "all") => {
+    if (!movies.length) return;
+
+    if (duration === "all") {
+      setHistory(movies);
+      return;
+    }
+
+    const now = new Date();
+    const filtered = movies.filter((movie) => {
+      const watched = new Date(movie.watched_date);
+      
+      if (duration === "week") {
+        const oneWeekAgo = new Date(now);
+        oneWeekAgo.setDate(now.getDate() - 7);
+        return watched >= oneWeekAgo;
+      }
+
+      if (duration === "month") {
+        const oneMonthAgo = new Date(now);
+        oneMonthAgo.setMonth(now.getMonth() - 1);
+        return watched >= oneMonthAgo;
+      }
+      
+      return true;
+    });
+
+    setHistory(filtered);
+  }, [movies]);
+
+  const removeMovie = async (movieId) => {
+    try {
+      const response = await fetch(
+        `${Config.API_BASE_URL}/movie/${userId}/${movieId}`,
+        { method: "DELETE" }
+      );
+      if (!response.ok) throw new Error("Failed to delete movie");
+    } catch (error) {
+      Alert.alert("Error", error.message);
+    }
+  };
+
+  const updateMovie = async (movieId, updatedFields) => {
+    try {
+      const response = await fetch(
+        `${Config.API_BASE_URL}/movie/${userId}/${movieId}`,
+        {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(updatedFields),
-        });
-          console.log(response);
-        if (!response.ok) throw new Error("Failed to update movie");
-        await refreshMovies();
-        Alert.alert("Success", "Movie updated successfully!");
-      } catch (error) {
-        console.log("Error updating movie:", err);
-        Alert.alert("Error", err.message);
-      }
-    },
-    [refreshMovies]
-  );
+        }
+      );
+      if (!response.ok) throw new Error("Failed to update movie");
+    } catch (error) {
+      Alert.alert("Error", error.message);
+    }
+  };
 
-  return { movies, summary, isLoading, refreshMovies, removeMovie, updateMovie };
+  return {
+    movies,
+    summary,
+    history, // Expose the filtered list
+    isLoading,
+    updateMovie,
+    removeMovie,
+    getHistoryByDuration,
+  };
 };

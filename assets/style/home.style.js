@@ -6,6 +6,7 @@ export const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: COLORS.background,
     },
+    // ... (Existing styles remain unchanged)
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -166,4 +167,10 @@ export const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '400',
     },
+    // --- NEW STYLE ADDED BELOW ---
+    skeleton: {
+        backgroundColor: COLORS.textMuted, 
+        opacity: 0.1, 
+        borderRadius: 4
+    }
 })
