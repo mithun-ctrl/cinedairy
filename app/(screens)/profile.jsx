@@ -1,6 +1,5 @@
 import { SignOutButton } from '@/components/SignOutButton';
 import { COLORS } from '@/constant/colors';
-import { Config } from '@/hooks/key';
 import { useMovies } from '@/hooks/useMovie';
 import { useUser } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,6 +10,8 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -19,15 +20,14 @@ import {
   View
 } from 'react-native';
 
+
 const Profile = () => {
   const { user } = useUser();
-
   const [isLoading, setIsLoading] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [imageLoading, setImageLoading] = useState(false);
-  const { summary, movies } = useMovies(user?.id);
-
+  const { summary } = useMovies(user?.id);
 
   useEffect(() => {
     if (user) {
@@ -36,27 +36,9 @@ const Profile = () => {
     }
   }, [user]);
 
-
-  const fetchSummary = async () => {
-    if (!user?.id) return;
-
-    setSummaryLoading(true);
-    try {
-      const response = await fetch(`${Config.API_BASE_URL}/movie/summary/${user.id}`);
-      if (!response.ok) throw new Error("Failed to fetch summary");
-      const data = await response.json();
-      setSummary(data);
-    } catch (error) {
-      console.log("Error fetching summary:", error);
-    } finally {
-      setSummaryLoading(false);
-    }
-  };
-
   const pickImage = async () => {
     try {
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
       if (permissionResult.granted === false) {
         Alert.alert('Permission Required', 'Permission to access camera roll is required!');
         return;
@@ -74,57 +56,43 @@ const Profile = () => {
       }
     } catch (error) {
       console.log('Error picking image:', error);
-      Alert.alert('Error', 'Failed to pick image');
     }
   };
 
   const updateAvatar = async (imageUri) => {
     setImageLoading(true);
     try {
-      // Convert image to base64
       const response = await fetch(imageUri);
       const blob = await response.blob();
-
       const reader = new FileReader();
       reader.readAsDataURL(blob);
-
       reader.onloadend = async () => {
-        const base64data = reader.result;
-
         try {
-          await user.setProfileImage({ file: base64data });
+          await user.setProfileImage({ file: reader.result });
           await user.reload();
-          Alert.alert('Success', 'Profile picture updated successfully!');
+          Alert.alert('Success', 'Lookin\' good!');
         } catch (error) {
-          console.log('Error updating avatar:', error);
           Alert.alert('Error', 'Failed to update profile picture');
         } finally {
           setImageLoading(false);
         }
       };
     } catch (error) {
-      console.log('Error processing image:', error);
-      Alert.alert('Error', 'Failed to process image');
       setImageLoading(false);
     }
   };
 
   const handleSubmit = async () => {
     if (!firstName.trim() || !lastName.trim()) {
-      Alert.alert('Validation Error', 'First name and last name are required');
+      Alert.alert('Hold on', 'First name and last name are required');
       return;
     }
-
     setIsLoading(true);
     try {
-      await user.update({
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-      });
+      await user.update({ firstName: firstName.trim(), lastName: lastName.trim() });
       await user.reload();
-      Alert.alert('Success', 'Profile updated successfully!');
+      Alert.alert('Saved', 'Profile details updated.');
     } catch (error) {
-      console.log('Error updating profile:', error);
       Alert.alert('Error', 'Failed to update profile');
     } finally {
       setIsLoading(false);
@@ -135,145 +103,158 @@ const Profile = () => {
     if (!timestamp) return 'N/A';
     return new Date(timestamp).toLocaleDateString('en-US', {
       year: 'numeric',
-      month: 'long',
+      month: 'short',
       day: 'numeric'
     });
   };
 
-  const formatCurrency = (amount) => {
-    const numAmount = typeof amount === 'number' ? amount : parseFloat(amount) || 0;
-    return `₹${numAmount.toFixed(2)}`;
-  };
-
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.push("/")}>
-          <Ionicons name='arrow-back' size={24} color={COLORS.text} />
-        </TouchableOpacity>
-        <Text style={styles.title}>Profile</Text>
-        <TouchableOpacity
-          style={[styles.addButtonContainer, isLoading && styles.addButtonDisabled]}
-          disabled={isLoading}
-          onPress={handleSubmit}>
-          <Text style={styles.addButton}>{isLoading ? "Updating..." : "Submit"}</Text>
-          {!isLoading && <Ionicons name='checkmark' size={20} color={COLORS.primary} />}
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}>
-
-        {/* Avatar Section */}
-        <View style={styles.avatarSection}>
-          <View style={styles.avatarContainer}>
-            {imageLoading ? (
-              <View style={styles.avatar}>
-                <ActivityIndicator size="large" color={COLORS.primary} />
-              </View>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1, backgroundColor: COLORS.background}}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.iconButton} 
+            onPress={() => router.push("/")}
+          >
+            <Ionicons name='chevron-back' size={24} color={COLORS.text} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Profile</Text>
+          <TouchableOpacity
+            style={[styles.saveButton, isLoading && styles.disabledButton]}
+            disabled={isLoading}
+            onPress={handleSubmit}>
+            {isLoading ? (
+              <ActivityIndicator size="small" color={COLORS.primary} />
             ) : (
-              <Image
-                source={{ uri: user?.imageUrl || 'https://via.placeholder.com/150' }}
-                style={styles.avatar}
-              />
+              <Text style={styles.saveButtonText}>Save</Text>
             )}
-            <TouchableOpacity
-              style={styles.editAvatarButton}
-              onPress={pickImage}
-              disabled={imageLoading}>
-              <Ionicons name='camera' size={20} color={COLORS.background} />
-            </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
         </View>
 
-        {/* Statistics Section */}
-        <View style={styles.statsSection}>
-          <Text style={styles.sectionTitle}>Statistics</Text>
-
-          <View style={styles.statsGrid}>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{summary?.totalMovies || 0}</Text>
-              <Text style={styles.statLabel}>Total Movies</Text>
-            </View>
-
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>
-                ₹{Number(summary?.totalTicketCost || 0).toFixed(2)}
+        <ScrollView
+          style={styles.scrollView}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {/* Avatar Section */}
+  
+            <View style={styles.avatarContainer}>
+              <View style={styles.imageWrapper}>
+                {imageLoading ? (
+                  <ActivityIndicator size="large" color={COLORS.primary} />
+                ) : (
+                  <Image
+                    source={{ uri: user?.imageUrl || 'https://via.placeholder.com/150' }}
+                    style={styles.avatar}
+                  />
+                )}
+                <TouchableOpacity 
+                  style={styles.cameraBadge} 
+                  onPress={pickImage}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name='camera' size={18} color={COLORS.backgroundLight} />
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.userName}>
+                {firstName} {lastName}
               </Text>
-              <Text style={styles.statLabel}>Total Spent</Text>
+              <Text style={styles.userHandle}>@{user?.username || 'cinephile'}</Text>
             </View>
-          </View>
-        </View>
+          
+
+          {/* Stats Dashboard */}
+      
+            <View style={styles.statsContainer}>
+              <View style={styles.statBox}>
+                <View style={[styles.iconCircle, { backgroundColor: COLORS.backgroundDark }]}>
+                  <Ionicons name="film-outline" size={22} color={COLORS.primary} />
+                </View>
+                <View>
+                  <Text style={styles.statValue}>{summary?.totalMovies || 0}</Text>
+                  <Text style={styles.statLabel}>Movies Watched</Text>
+                </View>
+              </View>
+              
+              <View style={styles.divider} />
+
+              <View style={styles.statBox}>
+                <View style={[styles.iconCircle, { backgroundColor: COLORS.backgroundDark }]}>
+                  <Ionicons name="wallet-outline" size={22} color={COLORS.primary} />
+                </View>
+                <View>
+                  <Text style={styles.statValue}>₹{Number(summary?.totalTicketCost || 0).toFixed(0)}</Text>
+                  <Text style={styles.statLabel}>Total Spent</Text>
+                </View>
+              </View>
+            </View>
+          
+
+          {/* Editable Fields */}
+      
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionHeader}>Personal Details</Text>
+              
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>First Name</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={firstName}
+                  onChangeText={setFirstName}
+                  placeholder="Jane"
+                  placeholderTextColor={COLORS.border}
+                />
+              </View>
+
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>Last Name</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={lastName}
+                  onChangeText={setLastName}
+                  placeholder="Doe"
+                  placeholderTextColor={COLORS.border}
+                />
+              </View>
+            </View>
+          
+
+          {/* Read Only Info */}
+      
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionHeader}>Account Info</Text>
+              
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Email</Text>
+                <Text style={styles.infoValue}>{user?.emailAddresses[0]?.emailAddress}</Text>
+              </View>
+              <View style={styles.infoDivider} />
+              
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Member Since</Text>
+                <Text style={styles.infoValue}>{formatDate(user?.createdAt)}</Text>
+              </View>
+              <View style={styles.infoDivider} />
+
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Last Updated</Text>
+                <Text style={styles.infoValue}>{formatDate(user?.updatedAt)}</Text>
+              </View>
+            </View>
+          
+
+          {/* Logout */}
+             <View style={styles.logoutContainer}>
+                <SignOutButton />
+             </View>
+             <Text style={styles.versionText}>Version 1.0.1</Text>
 
 
-        {/* Editable User Info */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Personal Information</Text>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>First Name</Text>
-            <TextInput
-              style={styles.input}
-              value={firstName}
-              onChangeText={setFirstName}
-              placeholder="Enter first name"
-              placeholderTextColor={COLORS.textMuted}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Last Name</Text>
-            <TextInput
-              style={styles.input}
-              value={lastName}
-              onChangeText={setLastName}
-              placeholder="Enter last name"
-              placeholderTextColor={COLORS.textMuted}
-            />
-          </View>
-        </View>
-
-        {/* Non-Editable User Info */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account Information</Text>
-
-          <View style={styles.infoGroup}>
-            <Text style={styles.infoLabel}>Email</Text>
-            <Text style={styles.infoValue}>
-              {user?.emailAddresses[0]?.emailAddress || 'N/A'}
-            </Text>
-          </View>
-
-          <View style={styles.infoGroup}>
-            <Text style={styles.infoLabel}>Username</Text>
-            <Text style={styles.infoValue}>
-              {user?.username || 'N/A'}
-            </Text>
-          </View>
-
-          <View style={styles.infoGroup}>
-            <Text style={styles.infoLabel}>User Since</Text>
-            <Text style={styles.infoValue}>
-              {formatDate(user?.createdAt)}
-            </Text>
-          </View>
-
-          <View style={styles.infoGroup}>
-            <Text style={styles.infoLabel}>Last Updated</Text>
-            <Text style={styles.infoValue}>
-              {formatDate(user?.updatedAt)}
-            </Text>
-          </View>
-        </View>
-
-        {/* Logout Button */}
-        <View style={styles.logoutSection}>
-          <SignOutButton />
-        </View>
-      </ScrollView>
-    </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
   );
 };
 
@@ -283,145 +264,211 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    paddingTop: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.backgroundDark,
+    backgroundColor: COLORS.background
   },
-  title: {
+  iconButton: {
+    padding: 8,
+    borderRadius: 12,
+    backgroundColor: COLORS.backgroundDark,
+  },
+  headerTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: COLORS.text,
   },
-  addButtonContainer: {
-    flexDirection: "row",
-    gap: 4,
-    alignItems: "center"
+  saveButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: COLORS.highlight,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
   },
-  addButtonDisabled: {
-    opacity: 0.5,
+  disabledButton: {
+    opacity: 0.6,
   },
-  addButton: {
-    fontSize: 16,
+  saveButtonText: {
     color: COLORS.primary,
-    fontWeight: "600",
+    fontWeight: '600',
+    fontSize: 14,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 40,
+    padding: 20,
+    paddingBottom: 50,
   },
-  avatarSection: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
+  // Avatar
   avatarContainer: {
+    alignItems: 'center',
+    marginBottom: 25,
+  },
+  imageWrapper: {
     position: 'relative',
+    marginBottom: 12,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
   },
   avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: COLORS.highlight,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 4,
+    borderColor: COLORS.backgroundLight,
   },
-  editAvatarButton: {
+  cameraBadge: {
     position: 'absolute',
     bottom: 0,
     right: 0,
     backgroundColor: COLORS.primary,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
     borderColor: COLORS.background,
   },
-  statsSection: {
-    marginBottom: 32,
+  userName: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginBottom: 2,
   },
-  statsLoadingContainer: {
-    height: 100,
+  userHandle: {
+    fontSize: 14,
+    color: COLORS.textMuted,
+    fontWeight: '500',
+  },
+
+  statsContainer: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.backgroundLight,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 25,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 1,
+    elevation: 1,
+    borderWidth: 1,
+    borderColor: COLORS.backgroundDark,
+  },
+  statBox: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  divider: {
+    width: 1,
+    height: '100%',
+    backgroundColor: COLORS.borderMuted,
+    marginHorizontal: 20,
+    opacity: 0.5,
+  },
+  iconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: 16,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: COLORS.highlight,
-    padding: 20,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
   statValue: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: COLORS.primary,
-    marginBottom: 4,
+    fontSize: 18,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginBottom: 4
   },
   statLabel: {
-    fontSize: 14,
+    fontSize: 8,
     color: COLORS.textMuted,
+    textTransform: 'uppercase',
+    fontWeight: '700',
+    letterSpacing: 0.4,
+    opacity: 0.6
   },
-  section: {
-    marginBottom: 32,
-  },
-  inputGroup: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: 8,
-  },
-  input: {
+  // Forms & Sections
+  sectionContainer: {
+    marginBottom: 25,
     backgroundColor: COLORS.highlight,
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: COLORS.backgroundDark,
+  },
+  sectionHeader: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 15,
+  },
+  inputWrapper: {
+    marginBottom: 15,
+  },
+  inputLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.textMuted,
+    marginBottom: 6,
+    marginLeft: 4,
+  },
+  textInput: {
+    backgroundColor: COLORS.background,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     fontSize: 16,
     color: COLORS.text,
     borderWidth: 1,
-    borderColor: COLORS.highlight,
+    borderColor: COLORS.backgroundDark,
   },
-  infoGroup: {
+  // Info Rows
+  infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.highlight,
+    paddingVertical: 8,
   },
   infoLabel: {
     fontSize: 14,
-    fontWeight: '600',
     color: COLORS.textMuted,
+    fontWeight: '500',
   },
   infoValue: {
     fontSize: 14,
     color: COLORS.text,
-    flex: 1,
+    fontWeight: '600',
+    maxWidth: '60%',
     textAlign: 'right',
-    marginLeft: 16,
   },
-  logoutSection: {
-    alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 24,
+  infoDivider: {
+    height: 1,
+    backgroundColor: COLORS.borderMuted,
+    opacity: 0.2,
+    marginVertical: 8,
+  },
+  // Footer
+  logoutContainer: {
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  versionText: {
+    textAlign: 'center',
+    color: COLORS.border,
+    fontSize: 12,
+    marginTop: 20,
   },
 });
 
