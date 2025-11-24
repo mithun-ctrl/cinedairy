@@ -250,7 +250,7 @@ const Profile = () => {
              <View style={styles.logoutContainer}>
                 <SignOutButton />
              </View>
-             <Text style={styles.versionText}>Version 1.0.1</Text>
+             <Text style={styles.versionText}>Version 1.0.2</Text>
 
 
         </ScrollView>
